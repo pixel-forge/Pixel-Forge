@@ -1,8 +1,11 @@
 {
   "name": "pixel-forge",
   "private": true,
+  "license": "MIT",
   "packageManager": "pnpm@9",
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "clean": "pnpm -r --parallel exec rimraf dist",
     "typecheck": "pnpm -r typecheck",

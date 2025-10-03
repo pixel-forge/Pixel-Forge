@@ -116,6 +116,13 @@
 
 ---
 
+## License
+- **MIT License** for all Pixel Forge packages.
+- You may relicense future releases before accepting external contributions without additional permissions.
+- After external contributions, relicensing requires contributor permission (or replacing their code). A lightweight CLA can simplify this if needed in the future.
+
+---
+
 ## Documentation Conventions (per package)
 - README includes:
   - Install & import examples (ESM + CJS).
@@ -133,9 +140,35 @@
 
 ---
 
+## Repository Skeleton (initial)
+```
+pixel-forge/
+├─ .gitignore
+├─ LICENSE                # MIT (chosen)
+├─ README.md              # high-level overview
+├─ CONTRIBUTING.md        # contributor guide
+├─ CODE_OF_CONDUCT.md     # community expectations
+├─ SECURITY.md            # vulnerability reporting
+├─ docs/
+│  └─ repository-plan.md  # exported snapshot of this plan (optional)
+├─ package.json           # pnpm workspace root (scripts only; no deps)
+├─ pnpm-workspace.yaml
+├─ tsconfig.base.json     # shared TS config (kept at root)
+├─ .eslintrc.cjs          # shared lint rules (kept at root)
+├─ .prettierrc.json       # shared formatter config (kept at root)
+└─ packages/              # (empty for now)
+   └─ (to be added later: @pixelforge/utils, @pixelforge/logger, ...)
+```
+
+> Notes
+> - Keep `packages/` empty until we start `@pixelforge/utils`.
+> - Root `package.json` holds workspace scripts only; real code lives per package.
+> - **Configs stay at repo root** for best tool/editor auto-discovery; we can revisit a `configs/` folder later if desired.
+> - WebStorm tip: mark `dist/` as excluded per package once created (reduces index noise).
+
+---
+
 ## Next Up (Roadmap Candidates)
 - Define **`@pixelforge/utils` scope & rules** (purity, naming, isomorphic constraints, allowed categories).
 - Draft **`@pixelforge/logger` API surface** (levels, record shape, transports, formatters), still planning-only.
 - Lock shared **tsconfig** and lint rules (strictness levels, import rules) — explanation + pitfalls.
-
-> Edit this doc as we finalize each facet. This is the canonical source of truth for Pixel Forge repository structure and process.
