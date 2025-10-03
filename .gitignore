@@ -1,0 +1,36 @@
+# Node / TypeScript / pnpm
+node_modules/
+dist/
+*.tsbuildinfo
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testing / coverage / tooling
+coverage/
+.vitest/
+.jest/
+.nyc_output/
+.turbo/
+.eslintcache
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.map
+
+# Env files (never commit secrets)
+.env
+.env.*.local
+
+# Lockfile is kept; pnpm store is global
+# .pnpm-store/  # do not commit if you ever check one in locally
+
+# Generated docs (optional; keep if you plan to version docs)
+# docs/**/dist/
