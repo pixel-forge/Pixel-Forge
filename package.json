@@ -2,30 +2,41 @@
   "name": "pixel-forge",
   "private": true,
   "license": "MIT",
-  "packageManager": "pnpm@9",
+  "packageManager": "pnpm@10.18.0",
+  "engines": {
+    "node": ">=20"
+  },
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
-    "clean": "pnpm -r --parallel exec rimraf dist",
-    "typecheck": "pnpm -r typecheck",
-    "build": "pnpm -r build",
-    "dev": "pnpm -r --parallel dev",
-    "test": "pnpm -r test",
-    "test:watch": "pnpm -r --parallel test:watch",
-    "cjs:smoke": "pnpm -r cjs:smoke",
-    "lint": "eslint .",
+    "clean": "pnpm -r --parallel run clean || pnpm -r --parallel exec rimraf dist",
+    "typecheck": "pnpm -r run typecheck",
+    "build": "pnpm -r run build",
+    "dev": "pnpm -r --parallel run dev",
+    "test": "pnpm -r run test",
+    "test:watch": "pnpm -r --parallel run test:watch",
+    "cjs:smoke": "pnpm -r run cjs:smoke",
+    "lint": "pnpm -r run lint",
     "format": "prettier -c .",
-    "format:write": "prettier -w ."
+    "format:write": "prettier -w .",
+    "changeset": "changeset",
+    "release:status": "changeset status",
+    "release:prep": "pnpm typecheck && pnpm test && pnpm build && changeset version && git add -A && git commit -m \"chore(release): version packages\" || echo \"No version changes\"",
+    "release:publish": "pnpm -r build && changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.27.8",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.45.0",
+    "@typescript-eslint/parser": "^8.45.0",
     "eslint": "^9.0.0",
-    "@typescript-eslint/parser": "^7.0.0",
-    "@typescript-eslint/eslint-plugin": "^7.0.0",
-    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.29.0",
     "prettier": "^3.2.5",
-    "rimraf": "^5.0.5",
-    "typescript": "^5.6.0"
+    "rimraf": "^6.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.0.0"
   }
 }
