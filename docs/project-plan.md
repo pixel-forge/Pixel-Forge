@@ -1,112 +1,200 @@
-# Pixel Forge — Repository Plan (working copy)
+# Pixel Forge — Repository Plan
 
-> Source of truth for repo/process decisions. Case-by-case exceptions are allowed where explicitly noted.
-
----
-
-## 1) Tooling baselines
-- **Node**: ≥ **20** (LTS). Enforce via `engines.node` in root `package.json` and developer env files (`.nvmrc`, optional `.tool-versions`).
-- **Package manager**: **pnpm 10.18.0** pinned via root `package.json` → `"packageManager": "pnpm@10.18.0"`.
-- **Build allowlist** (pnpm v10): approve native builds for **esbuild** so `tsup` can run. Prefer repo‑local allowlist in root `package.json` under `pnpm.allowedBuiltDependencies`.
-- **TypeScript**: 5.9+ baseline. Modern settings per package (default `target: ES2022`).
+## Overview
+Pixel Forge is a multi-package TypeScript monorepo focused on browser UI libraries, published as JavaScript. Packages are versioned **independently**. We release **stable-only** (no canaries/snapshots for now). Work happens on `dev`; releases are cut from `main`.
 
 ---
 
-## 2) Monorepo wiring
-- **Workspaces**: `packages/*`.
-- **Root scripts**: _fan‑out only_. Root assumes each package defines its own scripts and simply invokes them with workspace recursion.
-    - Examples (root `package.json`):
-        - `build`: `pnpm -r run build`
-        - `dev`: `pnpm -r --parallel run dev`
-        - `typecheck`: `pnpm -r run typecheck`
-        - `test`: `pnpm -r run test`
-        - `test:watch`: `pnpm -r --parallel run test:watch`
-        - `lint`: `pnpm -r run lint`
-        - `clean`: `pnpm -r --parallel run clean || pnpm -r --parallel exec rimraf dist`
-- **Per‑package scripts**: Packages own their `build/dev/test/typecheck/lint/clean` implementations (they may diverge—e.g., React, SASS, etc.).
-- **Versioning/Release**: Changesets wired at root (`changeset`, `release` scripts). Publishing strategy to be finalized when first public release is ready.
+## Versioning & SemVer
+- **PATCH** (`x.y.Z`) — bug fixes/internal changes; no API behavior changes.
+- **MINOR** (`x.Y.z`) — backwards-compatible features; existing code continues to work.
+- **MAJOR** (`X.y.z`) — breaking changes; requires consumer action/migration.
+
+Each package is bumped independently according to its changes.
 
 ---
 
-## 3) Imports policy
-- **Case‑by‑case**. Barrels are not a global rule.
-- Encourage **granular subpath imports** where tree‑shaking matters (e.g., `@pixelforge/utils/array`). Some packages may choose a root barrel for DX; document that choice in the package README.
+## Changesets Workflow
+### Day-to-Day (on `dev`)
+1. Implement changes in one or more packages.
+2. Create a changeset:
+   ```bash
+   pnpm changeset
+   ```
+    - Select affected packages.
+    - Choose **patch/minor/major** per package.
+    - Write a short summary (becomes the changelog entry).
+3. Commit the changeset file in `.changeset/` along with your code (or as a separate commit).
+
+### When Releasing (from `main`)
+1. Merge `dev` → `main`.
+2. Prepare release:
+   ```bash
+   pnpm release:prep
+   ```
+    - Runs typecheck, tests, and build.
+    - Executes `changeset version` to bump versions and write `CHANGELOG.md` per package.
+    - Commits the version/changelog updates.
+3. Publish to npm (stable `latest` only):
+   ```bash
+   export NODE_AUTH_TOKEN=... # once per shell
+   pnpm release:publish
+   ```
+    - Publishes only packages with changed versions.
 
 ---
 
-## 4) Repo files (shared config & what they do)
-
-### 4.1 Workspace & package manager
-- **`pnpm-workspace.yaml`** — Declares workspace globs:
-  ```yaml
-  packages:
-    - "packages/*"
-  ```
-- **Root `package.json`** — Monorepo driver:
-    - `packageManager: "pnpm@10.18.0"` (pins CLI version)
-    - `engines.node: ">=20"`
-    - Fan‑out scripts (see §2)
-    - Optional: `pnpm.allowedBuiltDependencies: ["esbuild"]` to auto‑approve builds
-
-### 4.2 TypeScript (shared presets)
-- **`configs/ts/tsconfig.base.json`** — Minimal baseline for all packages (ES2022, NodeNext or ESNext depending on package, `strict: true`, `skipLibCheck: true`).
-- **`configs/ts/tsconfig.package.json`** — Package‑level preset extending the base. Common toggles (`resolveJsonModule`, `esModuleInterop`, `allowSyntheticDefaultImports`, `noEmit: true` by default). Individual packages can override (e.g., `module: ESNext`, `moduleResolution: Bundler`, `composite: true`).
-
-### 4.3 Testing
-- **`configs/test/vitest.base.ts`** — Shared Vitest base exported as a plain object (`baseTestConfig`), enabling:
-    - `environment: 'node'`
-    - `globals: true` (runtime `describe/it/expect`)
-    - Standard `include/exclude`, c8 coverage defaults
-- **Per‑package `vitest.config.ts`** — `defineConfig({ ...baseTestConfig, /* overrides */ })`.
-- **Directory convention** — Tests live in `__tests__/` **adjacent to** `src/` and **mirror its folder structure**.
-
-### 4.4 Linting & formatting
-- **`configs/eslint/eslint.config.mjs`** — Root ESLint config for the monorepo (ESLint 9 + `@typescript-eslint` 8). Packages extend/consume this without duplicating rules.
-- **`configs/prettier/prettierrc.json`** — Shared Prettier config. Root scripts may offer `format`/`format:write` spanning the whole repo.
-
-### 4.5 Release & metadata
-- **Changesets** — Root‑level setup (`@changesets/cli`), with `.changeset/` directory committed when we start authoring changes. Standard `changeset` / `release` scripts live at root.
-
-### 4.6 Developer environment helpers (optional but recommended)
-- **`.nvmrc`** — `20` (helps devs switch to Node 20 via nvm).
-- **`.tool-versions`** — `nodejs 20` (for asdf users).
-
-### 4.7 Policy docs (tracked separately from the plan)
-- **`.gitignore`**, **`CONTRIBUTING.md`**, **`CODE_OF_CONDUCT.md`**, **`SECURITY.md`** — Maintained as standalone drafts/files (not in this plan). The plan may reference them when we finalize policies.
+## Branch Strategy
+- **`dev`** — active development work; push frequently.
+- **`main`** — stable, production-ready. Only release from here. No release/canary branches for now.
 
 ---
 
-## 5) Notes carried forward
-- The `@pixelforge/utils` package currently ships **subpaths only** (no root barrel). This is **not** a repo‑wide rule; evaluate per package.
-- In packages using bundler builds, prefer TypeScript `module: ESNext` + `moduleResolution: Bundler`. (Remember this from utils; reuse where appropriate.)
+## Build & Type Emission Strategy (tsup JS + tsc DTS)
+**Decision:** Build JavaScript with **tsup**; emit declarations with **tsc**.
+
+**Why**
+- **Stable for multi-entry packages.** Avoids tsup DTS edge cases (e.g., `TS6307` on internal imports not listed as entries).
+- **Clear ownership.** tsup = JS (esm/cjs + sourcemaps). tsc = types (`.d.ts`, `.d.ts.map`).
+- **Predictable include/exclude.** DTS uses the same project config as typecheck.
+
+**Conventions**
+- **Shared configs (under `configs/ts/`):**
+    - `tsconfig.base.json`: common compiler options only (no `include`/`exclude`, no `rootDir`/`outDir`).
+    - `tsconfig.package.json`: extends base; still **no** `rootDir`/`outDir`; keep `noEmit: true`.
+- **Per-package:**
+    - `packages/<name>/tsconfig.json`: extends `configs/ts/tsconfig.package.json`, sets:
+        - `rootDir: "src"`, `outDir: "dist"`, optional `types` (e.g., `vitest/globals`), **noEmit** for typecheck.
+    - `packages/<name>/tsconfig.build.json`: extends `./tsconfig.json`; flips emit for DTS only:
+      ```json
+      {
+        "extends": "./tsconfig.json",
+        "compilerOptions": {
+          "noEmit": false,
+          "emitDeclarationOnly": true,
+          "declaration": true,
+          "declarationMap": true,
+          "outDir": "dist",
+          "incremental": false,
+          "composite": false
+          // optional: "types": []
+        }
+      }
+      ```
+- **Build flow (per package):**
+    1) Typecheck: `tsc -p tsconfig.json --noEmit`
+    2) JS: `tsup` (esm + cjs)
+    3) DTS: `tsc -p tsconfig.build.json`
+
+> Add to `.gitignore`: `*.tsbuildinfo` and `**/dist/`.
 
 ---
 
-## 6) TODO / Upcoming
-- CI workflows (lint → typecheck → test → build) — reusable workflow to be added.
-- Documentation system: set up TypeDoc generation and decide on a docs site (Docusaurus or alternative) later.
+## Root Scripts (Workspace Standard)
+Root scripts **fan-out** to packages (keep names consistent in each package).
+
+- **clean** — `pnpm -r --parallel run clean || pnpm -r --parallel exec rimraf dist`  
+  Force-cleans build artifacts; falls back to nuking `dist/` if a package lacks `clean`.
+
+- **typecheck** — `pnpm -r run typecheck`  
+  TS compile check (no emit).
+
+- **build** — `pnpm -r run build`  
+  For PF packages: **tsup** (JS) + `tsc -p tsconfig.build.json` (DTS).
+
+- **dev** — `pnpm -r --parallel run dev`  
+  Concurrent watchers/dev servers.
+
+- **test** — `pnpm -r run test`  
+  Runs unit tests once.
+
+- **test:watch** — `pnpm -r --parallel run test:watch`  
+  Watch tests concurrently.
+
+- **cjs:smoke** — `pnpm -r run cjs:smoke`  
+  Sanity check CommonJS `require()` works for each package’s CJS build/exports.
+
+- **lint** — `pnpm -r run lint`  
+  Lint all packages.
+
+- **format** — `prettier -c .`  
+  Check formatting; exits non-zero if changes needed.
+
+- **format:write** — `prettier -w .`  
+  Apply Prettier formatting in place.
+
+- **changeset** — `changeset`  
+  Create a changeset (choose packages + bump type + notes).
+
+- **release:status** — `changeset status`  
+  Preview which packages will bump and how.
+
+- **release:prep** —  
+  `pnpm typecheck && pnpm test && pnpm build && changeset version && git add -A && git commit -m "chore(release): version packages" || echo "No version changes"`  
+  Pipeline: typecheck → tests → build → apply changesets (version bumps + changelogs) → commit. If no changesets, prints a friendly message.
+
+- **release:publish** — `pnpm -r build && changeset publish`  
+  Rebuild recursively, then publish only changed packages (requires `NODE_AUTH_TOKEN`; defaults to `latest`).
+
+> Notes: `-r` = recursive across workspace; `--parallel` runs concurrently (best for watchers).
 
 ---
 
-## 7) Documentation
+## Per‑Package Required Scripts (Template)
+Each package should define the following scripts in its `package.json`:
 
-### 7.1 Principles
-- **Tooling-agnostic for now**: We are **not** committing to a docs generator yet (TypeDoc, Docusaurus, etc.). This section defines how we document code so any future tool can consume it.
-- **Source of truth is the code**: Documentation for APIs lives in TSDoc/JSDoc comments beside the implementation.
-- **Separation of concerns**: Authored guides, sites, and changelogs are separate deliverables we will introduce later without changing how code is documented.
+```json
+{
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "tsup && tsc -p tsconfig.build.json",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "clean": "rimraf dist *.tsbuildinfo",
+    "cjs:smoke": "node -e "require('./dist/array/index.cjs'); require('./dist/object/index.cjs'); console.log('cjs ok')""
+  }
+}
+```
 
-### 7.2 TSDoc rules (apply to every exported function, class, type, and module)
-- **Summary**: One concise sentence describing purpose.
-- **Examples**: Provide **at least one `@example`** per exported API.
-- **Params**: Use `@param` when intent isn’t obvious from the name.
-- **Returns**: Add `@returns` when helpful (non-trivial types or behaviors).
-- **Errors**: Document thrown errors with `@throws` when they can occur.
-- **Deprecation**: Use `@deprecated` with a short migration hint.
-- **Style**: Prefer plain language over repeating type names; keep examples runnable when possible.
+Notes:
+- Adjust the `cjs:smoke` require paths per package entrypoints. Goal: prove CJS `require()` works (logic validated by tests).
+- If a package doesn’t use Vitest/ESLint, swap for your chosen tool or omit. Keep script **names** consistent with root scripts.
 
-### 7.3 Future tooling (TBD)
-- When we choose a documentation generator, it should:
-    - Consume existing TSDoc comments without requiring content rewrites.
-    - Support per-package or aggregated API sections.
-    - Allow authored guides/changelogs to coexist with generated API reference.
-- Potential options (to be decided later): TypeDoc (API generation), Docusaurus/Nextra (site). No configuration committed yet.
+---
+
+## Manual Release Procedure
+1. On `dev`: finish work, run `pnpm changeset` to author a changeset (select packages, bump types, add notes). Commit.
+2. Merge to `main`:
+   ```bash
+   git checkout main
+   git merge dev --no-ff
+   ```
+3. Prepare release:
+   ```bash
+   pnpm release:prep
+   git push --follow-tags
+   ```
+4. Publish stable:
+   ```bash
+   export NODE_AUTH_TOKEN=...
+   pnpm release:publish
+   git push --follow-tags
+   ```
+
+---
+
+## Policies & Guardrails
+- **Stable-only publishes**: use npm `latest` only (no prereleases/canaries for now).
+- **Conventional Commits (light)**: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `test:`. Use `BREAKING CHANGE:` in the body or pick **major** during `pnpm changeset`.
+- **Breaking changes**: prefer deprecation first; remove on next major. Put migration notes in the changeset (auto-lands in `CHANGELOG.md`).
+
+---
+
+## Future CI/CD (Jenkins Home Lab)
+When ready to automate on `main`, the job runs the same commands:
+1) `pnpm i --frozen-lockfile`
+2) `pnpm typecheck && pnpm test && pnpm build`
+3) `pnpm release:prep && git push --follow-tags`
+4) `pnpm release:publish` (with `NODE_AUTH_TOKEN` stored in Jenkins credentials)
