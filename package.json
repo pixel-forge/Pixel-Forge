@@ -1,42 +1,44 @@
 {
   "name": "pixel-forge",
   "private": true,
+  "type": "module",
   "license": "MIT",
   "packageManager": "pnpm@10.18.0",
   "engines": {
-    "node": ">=20"
+    "node": "^22.18.0 || >=24.11.0"
   },
-  "workspaces": [
-    "packages/*"
-  ],
   "scripts": {
-    "clean": "pnpm -r --parallel run clean || pnpm -r --parallel exec rimraf dist",
+    "clean": "pnpm -r --parallel run clean",
     "typecheck": "pnpm -r run typecheck",
     "build": "pnpm -r run build",
     "dev": "pnpm -r --parallel run dev",
     "test": "pnpm -r run test",
     "test:watch": "pnpm -r --parallel run test:watch",
-    "cjs:smoke": "pnpm -r run cjs:smoke",
-    "lint": "pnpm -r run lint",
+    "lint": "eslint .",
     "format": "prettier -c .",
     "format:write": "prettier -w .",
     "changeset": "changeset",
     "release:status": "changeset status",
-    "release:prep": "pnpm typecheck && pnpm test && pnpm build && changeset version && git add -A && git commit -m \"chore(release): version packages\" || echo \"No version changes\"",
-    "release:publish": "pnpm -r build && changeset publish"
+    "release:prep": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && changeset version",
+    "release:publish": "pnpm build && changeset publish"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.27.8",
-    "@types/node": "^20.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.45.0",
-    "@typescript-eslint/parser": "^8.45.0",
-    "eslint": "^9.0.0",
+    "@arethetypeswrong/core": "^0.18.5",
+    "@changesets/changelog-github": "^1.0.0",
+    "@changesets/cli": "^3.0.1",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.15.0",
+    "@vitest/coverage-v8": "^4.1.11",
+    "eslint": "^10.9.1",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-import": "^2.29.0",
-    "prettier": "^3.2.5",
+    "globals": "^17.11.0",
+    "prettier": "^3.9.6",
+    "publint": "^0.3.24",
     "rimraf": "^6.0.0",
-    "tsup": "^8.0.0",
-    "typescript": "^5.6.0",
-    "vitest": "^2.0.0"
+    "tsdown": "^0.22.14",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.68.0",
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11"
   }
 }

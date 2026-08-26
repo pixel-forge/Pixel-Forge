@@ -1,52 +1,45 @@
 {
-  "name": "@pixelforge/utils",
+  "name": "@pixel-forge/utils",
   "version": "0.0.0",
-  "private": false,
   "description": "Shared TypeScript utilities for Pixel Forge libraries.",
   "license": "MIT",
   "type": "module",
-  "exports": {
-    "./array": {
-      "types": "./dist/array/index.d.ts",
-      "import": "./dist/array/index.mjs",
-      "require": "./dist/array/index.cjs"
-    },
-    "./object": {
-      "types": "./dist/object/index.d.ts",
-      "import": "./dist/object/index.mjs",
-      "require": "./dist/object/index.cjs"
-    },
-    "./timing": {
-      "types": "./dist/timing/index.d.ts",
-      "import": "./dist/timing/index.mjs",
-      "require": "./dist/timing/index.cjs"
-    },
-    "./types": {
-      "types": "./dist/types/index.d.ts",
-      "default": "./dist/types/index.d.ts"
-    },
-    "./package.json": "./package.json"
-  },
   "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pixel-forge/Pixel-Forge.git",
+    "directory": "packages/utils"
+  },
+  "homepage": "https://github.com/pixel-forge/Pixel-Forge/tree/main/packages/utils#readme",
+  "bugs": "https://github.com/pixel-forge/Pixel-Forge/issues",
+  "keywords": [
+    "typescript",
+    "utilities",
+    "esm",
+    "tree-shaking"
+  ],
   "files": [
     "dist"
   ],
   "scripts": {
-    "clean": "rimraf dist *.tsbuildinfo",
-    "build": "tsup && tsc -p tsconfig.build.json",
+    "clean": "rimraf dist",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "dev": "tsup --watch",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "lint": "eslint ."
+    "test:watch": "vitest"
   },
-  "dependencies": {},
-  "peerDependencies": {},
-  "devDependencies": {},
   "publishConfig": {
     "access": "public"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.12.0"
+  },
+  "exports": {
+    "./array": "./dist/array/index.js",
+    "./object": "./dist/object/index.js",
+    "./timing": "./dist/timing/index.js",
+    "./types": "./dist/types/index.js",
+    "./package.json": "./package.json"
   }
 }

@@ -6,7 +6,7 @@ export const baseTestConfig = {
     exclude: ['**/dist/**', '**/node_modules/**'],
     reporters: ['default'],
     coverage: {
-      provider: 'c8',
+      provider: 'v8',
       all: true,
       reportsDirectory: './coverage',
       reporter: ['text', 'html'],
