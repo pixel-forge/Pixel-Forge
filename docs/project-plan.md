@@ -1,112 +1,226 @@
-# Pixel Forge — Repository Plan (working copy)
+# Pixel Forge — Repository Plan
 
-> Source of truth for repo/process decisions. Case-by-case exceptions are allowed where explicitly noted.
+## Overview
 
----
-
-## 1) Tooling baselines
-- **Node**: ≥ **20** (LTS). Enforce via `engines.node` in root `package.json` and developer env files (`.nvmrc`, optional `.tool-versions`).
-- **Package manager**: **pnpm 10.18.0** pinned via root `package.json` → `"packageManager": "pnpm@10.18.0"`.
-- **Build allowlist** (pnpm v10): approve native builds for **esbuild** so `tsup` can run. Prefer repo‑local allowlist in root `package.json` under `pnpm.allowedBuiltDependencies`.
-- **TypeScript**: 5.9+ baseline. Modern settings per package (default `target: ES2022`).
+Pixel Forge is a multi-package TypeScript monorepo of small, low-dependency libraries.
+Packages are versioned **independently** and published **ESM-only** under the
+`@pixel-forge/*` scope. We release **stable-only** (no canaries/snapshots for now).
+Work happens on `dev`; releases are cut from `main`.
 
 ---
 
-## 2) Monorepo wiring
-- **Workspaces**: `packages/*`.
-- **Root scripts**: _fan‑out only_. Root assumes each package defines its own scripts and simply invokes them with workspace recursion.
-    - Examples (root `package.json`):
-        - `build`: `pnpm -r run build`
-        - `dev`: `pnpm -r --parallel run dev`
-        - `typecheck`: `pnpm -r run typecheck`
-        - `test`: `pnpm -r run test`
-        - `test:watch`: `pnpm -r --parallel run test:watch`
-        - `lint`: `pnpm -r run lint`
-        - `clean`: `pnpm -r --parallel run clean || pnpm -r --parallel exec rimraf dist`
-- **Per‑package scripts**: Packages own their `build/dev/test/typecheck/lint/clean` implementations (they may diverge—e.g., React, SASS, etc.).
-- **Versioning/Release**: Changesets wired at root (`changeset`, `release` scripts). Publishing strategy to be finalized when first public release is ready.
+## Module format: ESM-only
+
+Every package ships ESM only. There is no `.cjs` output, no `.d.cts`, no dual
+`import`/`require` conditions, and no `main`/`module` fields.
+
+CommonJS consumers are still supported — they reach the package through Node's
+`require(esm)`, which was unflagged in Node 22.12.0. This is why the two rules
+below are mandatory rather than stylistic.
+
+### Rules that keep `require(esm)` working
+
+1. **Named exports only.** No `export default`, no `module.exports = fn` shape.
+   Under `require(esm)` Node hands back a module namespace object, so
+   `require(pkg).thing` works but `require(pkg)` used as the value itself does not.
+   Enforced by `import/no-default-export` on `packages/*/src/**`.
+2. **Never ship top-level await.** TLA anywhere in the graph makes `require()`
+   throw `ERR_REQUIRE_ASYNC_MODULE`. Use a lazy `import()` inside a function.
+   Enforced by `no-restricted-syntax` for fast feedback, and definitively by the
+   `require()` smoke test before publish — that also covers TLA in dependencies.
+3. **No deep paths into `dist/`.** The generated `exports` map is the entire
+   public surface. There is deliberately no root barrel.
+
+### Consumer support matrix
+
+Most of these floors come from using subpath `exports` at all, not from ESM-only.
+
+| Consumer                                            | Floor                                                         |
+| --------------------------------------------------- | ------------------------------------------------------------- |
+| Node, `import`                                      | 14.13+ (effectively unconstrained)                            |
+| Node, `require()`                                   | **22.12.0+** — where `require(esm)` was unflagged             |
+| TypeScript, ESM consumer                            | 4.7+ with `node16`/`nodenext`, or 5.0+ with `bundler`         |
+| TypeScript, CJS consumer                            | **`module: nodenext`** — see below                            |
+| webpack                                             | 5.0+ (webpack 4 has no `exports` support)                     |
+| Metro / React Native                                | Metro 0.82+ / RN 0.79+ (`exports` on by default)              |
+| Vite, Rollup, esbuild, Parcel 2+, Bun, Deno, Vitest | any realistic version                                         |
+| Jest                                                | needs `--experimental-vm-modules`; still true as of Jest 30.4 |
+
+`moduleResolution: "node"`/`"node10"` cannot resolve subpath exports at all. That
+was already true under a dual build, because these packages have no root entry.
+
+**CJS TypeScript consumers must use `module: nodenext`, not `node16`.** Verified
+against the packed tarball: `nodenext` models Node's `require(esm)` and accepts a
+static `import` from a CommonJS file, while `node16` rejects it with TS1479 and
+suggests a dynamic `import()`. The runtime works either way — this is TypeScript
+being stricter than Node, not a packaging fault. The alternatives for a consumer
+stuck on `node16` are `"type": "module"`, an `.mts` extension, or dynamic import.
 
 ---
 
-## 3) Imports policy
-- **Case‑by‑case**. Barrels are not a global rule.
-- Encourage **granular subpath imports** where tree‑shaking matters (e.g., `@pixelforge/utils/array`). Some packages may choose a root barrel for DX; document that choice in the package README.
+## Tree-shaking / import surface
+
+- **One subpath per domain**, no root `.` barrel: `@pixel-forge/utils/array`,
+  `/object`, `/timing`, `/types`. A consumer importing `/array` cannot pull in
+  `/timing` even under a bundler that does no tree-shaking at all. This is a
+  stronger guarantee than `sideEffects` alone.
+- `"sideEffects": false` in every package.
+- `"files": ["dist"]` — `src/` never ships.
+- Peer dependencies (e.g. `react`) are declared as peers and listed in tsdown's
+  `deps.neverBundle` so they are never inlined.
+- Internal dependencies use `workspace:^`; `changeset version` rewrites these to
+  real ranges at publish time.
 
 ---
 
-## 4) Repo files (shared config & what they do)
+## Build: tsdown
 
-### 4.1 Workspace & package manager
-- **`pnpm-workspace.yaml`** — Declares workspace globs:
-  ```yaml
-  packages:
-    - "packages/*"
-  ```
-- **Root `package.json`** — Monorepo driver:
-    - `packageManager: "pnpm@10.18.0"` (pins CLI version)
-    - `engines.node: ">=20"`
-    - Fan‑out scripts (see §2)
-    - Optional: `pnpm.allowedBuiltDependencies: ["esbuild"]` to auto‑approve builds
+**Decision:** one tool. `tsdown` produces JS, declarations, and the `exports` map.
 
-### 4.2 TypeScript (shared presets)
-- **`configs/ts/tsconfig.base.json`** — Minimal baseline for all packages (ES2022, NodeNext or ESNext depending on package, `strict: true`, `skipLibCheck: true`).
-- **`configs/ts/tsconfig.package.json`** — Package‑level preset extending the base. Common toggles (`resolveJsonModule`, `esModuleInterop`, `allowSyntheticDefaultImports`, `noEmit: true` by default). Individual packages can override (e.g., `module: ESNext`, `moduleResolution: Bundler`, `composite: true`).
+Previously this repo used `tsup` for JS plus a separate `tsc` pass for
+declarations, because tsup's multi-entry DTS hit `TS6307` on internal imports not
+listed as entries. tsdown's declaration generation handles multi-entry, so the
+second pass is gone along with `tsconfig.build.json`.
 
-### 4.3 Testing
-- **`configs/test/vitest.base.ts`** — Shared Vitest base exported as a plain object (`baseTestConfig`), enabling:
-    - `environment: 'node'`
-    - `globals: true` (runtime `describe/it/expect`)
-    - Standard `include/exclude`, c8 coverage defaults
-- **Per‑package `vitest.config.ts`** — `defineConfig({ ...baseTestConfig, /* overrides */ })`.
-- **Directory convention** — Tests live in `__tests__/` **adjacent to** `src/` and **mirror its folder structure**.
+**Why tsdown over tsup**
 
-### 4.4 Linting & formatting
-- **`configs/eslint/eslint.config.mjs`** — Root ESLint config for the monorepo (ESLint 9 + `@typescript-eslint` 8). Packages extend/consume this without duplicating rules.
-- **`configs/prettier/prettierrc.json`** — Shared Prettier config. Root scripts may offer `format`/`format:write` spanning the whole repo.
+1. `exports: true` derives `package.json#exports` from the entry points and writes
+   it back. The map cannot drift from what was emitted. tsup has no equivalent —
+   the hand-written map in this repo's first attempt pointed at `.mjs` files that
+   were never built, which made the package unpublishable.
+2. Multi-entry declaration generation works, collapsing two build tools into one.
+3. Native `publint` and `attw` integration, so the build validates the package.
+4. Rolldown/Oxc based, materially faster.
 
-### 4.5 Release & metadata
-- **Changesets** — Root‑level setup (`@changesets/cli`), with `.changeset/` directory committed when we start authoring changes. Standard `changeset` / `release` scripts live at root.
+**Per-package config** (`packages/<name>/tsdown.config.ts`): one entry per
+published subpath, `format: ['esm']`, `dts: true`, `exports: true`,
+`platform: 'neutral'`, and `publint` + `attw` enabled outside watch mode.
 
-### 4.6 Developer environment helpers (optional but recommended)
-- **`.nvmrc`** — `20` (helps devs switch to Node 20 via nvm).
-- **`.tool-versions`** — `nodejs 20` (for asdf users).
-
-### 4.7 Policy docs (tracked separately from the plan)
-- **`.gitignore`**, **`CONTRIBUTING.md`**, **`CODE_OF_CONDUCT.md`**, **`SECURITY.md`** — Maintained as standalone drafts/files (not in this plan). The plan may reference them when we finalize policies.
+`isolatedDeclarations` is on in `configs/ts/tsconfig.base.json`, which lets tsdown
+emit declarations via oxc-transform instead of falling back to the TypeScript
+compiler. It requires explicit return types on exported functions.
 
 ---
 
-## 5) Notes carried forward
-- The `@pixelforge/utils` package currently ships **subpaths only** (no root barrel). This is **not** a repo‑wide rule; evaluate per package.
-- In packages using bundler builds, prefer TypeScript `module: ESNext` + `moduleResolution: Bundler`. (Remember this from utils; reuse where appropriate.)
+## Publish validation
+
+`publint` and `attw` run as part of `tsdown`, so a passing build is a validated
+package. Both are skipped in watch mode because each packs the package.
+
+- **publint** — checks the built artifact: that every `exports` path exists, that
+  extensions match `"type"`, that `files` ships what is intended.
+- **attw** — checks that types resolve across resolution modes. Configured with
+  `profile: 'esm-only'`, which ignores the CJS resolution failures an ESM-only
+  package is expected to have, so the report stays actionable.
 
 ---
 
-## 6) TODO / Upcoming
-- CI workflows (lint → typecheck → test → build) — reusable workflow to be added.
-- Documentation system: set up TypeDoc generation and decide on a docs site (Docusaurus or alternative) later.
+## Toolchain versions
+
+- **Node** — dev requires `^22.18.0 || >=24.11.0` (tsdown's own floor). Note this
+  is stricter than the published consumer floor of `>=22.12.0`. Node 20 is EOL as
+  of 2026-04-30.
+- **TypeScript 6.0.x** — deliberately not 7.x. `typescript-eslint` declares
+  `typescript: ">=4.8.4 <6.1.0"`, and TS 7's programmatic API is deferred to 7.1,
+  so linting and framework tooling cannot drive it yet. Revisit after 7.1.
+- **ESLint 9** with flat config (`eslint.config.mjs`). Not 10, because
+  `eslint-plugin-import` peers cap at `^9`.
+- **pnpm 10.18** via the `packageManager` field.
 
 ---
 
-## 7) Documentation
+## Versioning & SemVer
 
-### 7.1 Principles
-- **Tooling-agnostic for now**: We are **not** committing to a docs generator yet (TypeDoc, Docusaurus, etc.). This section defines how we document code so any future tool can consume it.
-- **Source of truth is the code**: Documentation for APIs lives in TSDoc/JSDoc comments beside the implementation.
-- **Separation of concerns**: Authored guides, sites, and changelogs are separate deliverables we will introduce later without changing how code is documented.
+- **PATCH** — bug fixes / internal changes; no API behavior change.
+- **MINOR** — backwards-compatible features.
+- **MAJOR** — breaking changes requiring consumer action.
 
-### 7.2 TSDoc rules (apply to every exported function, class, type, and module)
-- **Summary**: One concise sentence describing purpose.
-- **Examples**: Provide **at least one `@example`** per exported API.
-- **Params**: Use `@param` when intent isn’t obvious from the name.
-- **Returns**: Add `@returns` when helpful (non-trivial types or behaviors).
-- **Errors**: Document thrown errors with `@throws` when they can occur.
-- **Deprecation**: Use `@deprecated` with a short migration hint.
-- **Style**: Prefer plain language over repeating type names; keep examples runnable when possible.
+Each package is bumped independently. Dropping a supported Node line, removing a
+subpath, or introducing top-level await are all **major**.
 
-### 7.3 Future tooling (TBD)
-- When we choose a documentation generator, it should:
-    - Consume existing TSDoc comments without requiring content rewrites.
-    - Support per-package or aggregated API sections.
-    - Allow authored guides/changelogs to coexist with generated API reference.
-- Potential options (to be decided later): TypeDoc (API generation), Docusaurus/Nextra (site). No configuration committed yet.
+---
+
+## Changesets workflow
+
+On `dev`, alongside your code:
+
+```bash
+pnpm changeset          # pick packages, bump type, write the changelog entry
+```
+
+Releasing from `main`:
+
+```bash
+git checkout main && git merge dev --no-ff
+pnpm release:prep       # lint, typecheck, test, build (validates), changeset version
+git add -A && git commit -m "chore(release): version packages"
+pnpm release:publish    # rebuild, then changeset publish
+git push --follow-tags
+```
+
+`release:prep` does not auto-commit — review the version bumps and generated
+changelogs before committing them.
+
+---
+
+## Root scripts
+
+| Script                             | Purpose                                                   |
+| ---------------------------------- | --------------------------------------------------------- |
+| `clean`                            | Remove build artifacts across packages                    |
+| `typecheck`                        | `tsc --noEmit` per package                                |
+| `build`                            | `tsdown` per package (includes publint + attw)            |
+| `dev`                              | Watch builds, validation skipped                          |
+| `test` / `test:watch`              | Vitest                                                    |
+| `lint`                             | `eslint .` across the workspace from the root flat config |
+| `format` / `format:write`          | Prettier check / write                                    |
+| `changeset` / `release:status`     | Author and inspect pending changesets                     |
+| `release:prep` / `release:publish` | See above                                                 |
+
+---
+
+## Per-package scripts
+
+```json
+{
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  }
+}
+```
+
+Linting is workspace-wide from the root, so packages carry no `lint` script.
+
+---
+
+## Target package graph
+
+```
+utils ──┬── logger
+        ├── react ──┬── search
+        ├── search  │
+        └── dnd ────┘
+```
+
+`search` and `dnd` should each be a framework-agnostic core plus a thin React
+binding, so the core stays usable without React.
+
+Stateful packages (`logger`'s global config, `dnd`'s drag manager, `react`'s
+contexts) are the reason ESM-only matters beyond simplicity: a dual build lets a
+consumer load two copies with separate state, which silently breaks singletons
+and makes `useContext` return defaults.
+
+---
+
+## Policies
+
+- **Stable-only publishes** — npm `latest`, no prereleases for now.
+- **Conventional Commits (light)** — `feat:`, `fix:`, `refactor:`, `docs:`,
+  `chore:`, `test:`.
+- **Breaking changes** — deprecate first, remove on the next major, and put
+  migration notes in the changeset so they land in `CHANGELOG.md`.

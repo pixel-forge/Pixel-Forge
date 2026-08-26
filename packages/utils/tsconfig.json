@@ -1,26 +1,5 @@
 {
   "extends": "../../configs/ts/tsconfig.package.json",
-  "compilerOptions": {
-    "composite": true,
-    "rootDir": "src",
-    "declaration": true,
-    "declarationMap": true,
-    "emitDeclarationOnly": false,
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "target": "ES2022",
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "skipLibCheck": true,
-    "types": [
-      "vitest/globals"
-    ]
-  },
-  "include": [
-    "src/**/*.ts",
-    "__tests__/**/*.ts"
-  ],
-  "exclude": [
-    "dist"
-  ]
+  "include": ["src/**/*.ts", "__tests__/**/*.ts"],
+  "exclude": ["dist", "node_modules"]
 }
