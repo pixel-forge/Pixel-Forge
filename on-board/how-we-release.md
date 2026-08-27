@@ -1,7 +1,7 @@
 # How we release
 
 Packages are versioned and published **independently**. A change to `utils` does
-not bump `logger`, unless `logger` depends on the part that changed — Changesets
+not bump `log`, unless `log` depends on the part that changed — Changesets
 works that out.
 
 We publish stable versions only. No canaries or snapshots for now.

@@ -1,0 +1,43 @@
+{
+  "name": "@pixel-forge/log",
+  "version": "0.0.0",
+  "description": "Console logging and log reporting for Pixel Forge.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pixel-forge/Pixel-Forge.git",
+    "directory": "packages/log"
+  },
+  "homepage": "https://github.com/pixel-forge/Pixel-Forge/tree/main/packages/log#readme",
+  "bugs": "https://github.com/pixel-forge/Pixel-Forge/issues",
+  "keywords": [
+    "typescript",
+    "logging",
+    "console",
+    "esm"
+  ],
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./browser-logger": "./dist/browser-logger/index.js",
+    "./package.json": "./package.json"
+  }
+}
