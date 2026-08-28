@@ -1,7 +1,7 @@
 # @pixel-forge/log
 
-Console logging and (later) log reporting for Pixel Forge. ESM-only, no runtime
-dependencies.
+Console logging and (later) log reporting for Pixel Forge. ESM-only. Depends on
+`@pixel-forge/utils`.
 
 Design intent and phased plan: [PLAN.md](./PLAN.md).
 

@@ -40,29 +40,25 @@ export abstract class Logger {
             && (Logger.levelOrder.indexOf(level) >= Logger.levelOrder.indexOf(this._logLevel));
     }
 
-    protected getParcels(): LogParcel[] {
-        return [];
+    public abstract log(level: LogLevel, ...parcels: LogParcel[]): void;
+
+    public logVerbose(...parcels: LogParcel[]): void {
+        this.log(LogLevel.Verbose, ...parcels);
     }
 
-    public abstract log(level: LogLevel, parcels: LogParcel[]): void;
-
-    public logVerbose(parcels: LogParcel[]): void {
-        this.log(LogLevel.Verbose, parcels);
+    public logDebug(...parcels: LogParcel[]): void {
+        this.log(LogLevel.Debug, ...parcels);
     }
 
-    public logDebug(parcels: LogParcel[]): void {
-        this.log(LogLevel.Debug, parcels);
+    public logInfo(...parcels: LogParcel[]): void {
+        this.log(LogLevel.Info, ...parcels);
     }
 
-    public logInfo(parcels: LogParcel[]): void {
-        this.log(LogLevel.Info, parcels);
+    public logWarning(...parcels: LogParcel[]): void {
+        this.log(LogLevel.Warning, ...parcels);
     }
 
-    public logWarning(parcels: LogParcel[]): void {
-        this.log(LogLevel.Warning, parcels);
-    }
-
-    public logError(parcels: LogParcel[]): void {
-        this.log(LogLevel.Error, parcels);
+    public logError(...parcels: LogParcel[]): void {
+        this.log(LogLevel.Error, ...parcels);
     }
 }

@@ -37,6 +37,7 @@
   },
   "exports": {
     "./array": "./dist/array/index.js",
+    "./color": "./dist/color/index.js",
     "./object": "./dist/object/index.js",
     "./timing": "./dist/timing/index.js",
     "./types": "./dist/types/index.js",

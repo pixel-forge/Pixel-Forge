@@ -44,6 +44,27 @@ clear, and keep other environments in mind so the API shape can grow.
 - Stateful defaults (global level, default instance): **one per process/document**;
   ESM-only is intentional so consumers do not load two copies with separate state.
 
+### LogParcel (printables)
+
+`LogParcel` is the closed union of values acceptable as a printable log
+argument (primitives, `null`/`undefined`, `Error`/`Date`/`RegExp`, and recursive
+arrays/objects of the same). Call sites use rest args: `logInfo(...parcels)`.
+
+Level prefix, tag, and timestamp are **logger chrome**, not parcels. There is no
+`getParcels()` hook — environment loggers own how chrome and parcels are laid
+out.
+
+### BrowserLogger output (planned)
+
+When more than one printable is logged, use `console.group`:
+
+- **Group title:** `{level prefix} {tag} {timestamp}`
+- If the first parcel is a `string` or `number`, fold it into the title and put
+  the remaining parcels in the group body
+- Otherwise keep the full chrome as the title and print every parcel in the body
+- A single parcel (or title-only with no body) can stay a one-line `console.*`
+  call without a group
+
 ## Log reporting (future)
 
 Use the JS **`Proxy`** API to wrap `console` (and/or logger facades), intercept

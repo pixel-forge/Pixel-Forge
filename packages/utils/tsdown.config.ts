@@ -11,6 +11,7 @@ export default defineConfig((inline) => {
       'object/index': 'src/object/index.ts',
       'timing/index': 'src/timing/index.ts',
       'types/index': 'src/types/index.ts',
+      'color/index': 'src/color/index.ts',
     },
     format: ['esm'],
     platform: 'neutral',
