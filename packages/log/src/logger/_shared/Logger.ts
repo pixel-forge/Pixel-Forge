@@ -40,6 +40,12 @@ export abstract class Logger {
             && (Logger.levelOrder.indexOf(level) >= Logger.levelOrder.indexOf(this._logLevel));
     }
 
+    protected composeTimestamp(): string {
+        const date = new Date();
+        const pad = (value: number, width = 2): string => String(value).padStart(width, '0');
+        return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${pad(date.getMilliseconds(), 3)}`;
+    }
+
     public abstract log(level: LogLevel, ...parcels: LogParcel[]): void;
 
     public logVerbose(...parcels: LogParcel[]): void {

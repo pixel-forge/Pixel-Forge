@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>@pixel-forge/log playground</title>
+    <style>
+      body {
+        font: 14px/1.4 system-ui, sans-serif;
+        margin: 24px;
+        max-width: 42rem;
+      }
+      fieldset {
+        margin: 16px 0;
+      }
+      button {
+        margin: 0 8px 8px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <p>Open Chrome DevTools → Console. This page only fires logs.</p>
+    <fieldset>
+      <legend>Config</legend>
+      <label><input type="checkbox" id="collapsedGroups" checked /> collapsedGroups</label><br />
+      <label><input type="checkbox" id="foldObject" checked /> foldObject</label><br />
+      <label><input type="checkbox" id="tableObjectArrays" /> tableObjectArrays</label><br />
+      <label><input type="checkbox" id="trace" /> trace</label>
+    </fieldset>
+    <button type="button" id="log-samples">Log samples</button>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

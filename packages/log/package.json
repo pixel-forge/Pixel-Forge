@@ -25,6 +25,7 @@
     "clean": "rimraf dist",
     "build": "tsdown",
     "dev": "tsdown --watch",
+    "playground": "vite --config playground/vite.config.ts --open",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"

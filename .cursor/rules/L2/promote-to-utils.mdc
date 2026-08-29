@@ -1,0 +1,5 @@
+---
+alwaysApply: true
+---
+
+When abstracting a helper that is not specific to this package's domain, put it in `@pixel-forge/utils` on the matching subpath. Do not leave a general-purpose function in the package that first needed it.
