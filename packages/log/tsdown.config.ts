@@ -7,11 +7,9 @@ export default defineConfig((inline) => {
 
   return {
     entry: {
-      'array/index': 'src/array/index.ts',
-      'object/index': 'src/object/index.ts',
-      'timing/index': 'src/timing/index.ts',
-      'types/index': 'src/types/index.ts',
-      'color/index': 'src/color/index.ts',
+      index: 'src/index.ts',
+      'browser-logger/index': 'src/logger/browser-logger/index.ts',
+      'node-logger/index': 'src/logger/node-logger/index.ts',
     },
     format: ['esm'],
     platform: 'neutral',

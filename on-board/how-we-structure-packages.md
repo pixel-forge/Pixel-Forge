@@ -115,6 +115,6 @@ holding state it is not: a consumer whose graph loads both copies gets two modul
 instances with separate state, which silently breaks singletons and makes React
 `useContext` return defaults.
 
-That applies to most of what is planned here — `logger`'s global configuration,
+That applies to most of what is planned here — `log`'s global configuration,
 `dnd`'s drag manager, `react`'s contexts, `search`'s index registry. ESM-only
 removes the possibility rather than documenting the hazard.
