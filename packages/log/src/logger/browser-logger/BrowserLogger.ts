@@ -73,7 +73,7 @@ export class BrowserLogger
         if (!this.canLog(level))
             return;
 
-        let title = this.composeTitle(level);
+        const title = this.composeTitle(level);
 
         //Fold first parcel into the title
         if (typeof parcels[0] !== 'object')
