@@ -26,6 +26,7 @@
     "build": "tsdown",
     "dev": "tsdown --watch",
     "playground": "vite --config playground/vite.config.ts --open",
+    "playground:node": "node playground/run.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -39,6 +40,7 @@
   "exports": {
     ".": "./dist/index.js",
     "./browser-logger": "./dist/browser-logger/index.js",
+    "./node-logger": "./dist/node-logger/index.js",
     "./package.json": "./package.json"
   },
   "dependencies": {

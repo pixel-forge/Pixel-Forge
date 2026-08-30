@@ -1,7 +1,7 @@
 import { isPlainObject } from '@pixel-forge/utils/object';
-import { LogLevelBackgroundColors, LogLevelForegroundColors, LogLevelPrefix } from '../_shared/consts';
+import { LogLevelBackgroundColors, LogLevelForegroundColors, TimestampBackgroundColor, TimestampForegroundColor } from '../_shared/consts';
 import { Logger } from '../_shared/Logger';
-import type { LogLevel, LogParcel } from '../_shared/types';
+import { LogLevel, type LogParcel } from '../_shared/types';
 import type { Config } from './types';
 
 type titleData = { titleString: string; designStrings: string[]; }
@@ -31,16 +31,37 @@ export class BrowserLogger
 
     //######### Composition #########
 
+    protected composePrefix(level: LogLevel): string {
+        switch (level) {
+            case LogLevel.Verbose:
+                return 'V';
+            case LogLevel.Debug:
+                return 'D';
+            case LogLevel.Info:
+                return 'I';
+            case LogLevel.Warning:
+                return 'W';
+            case LogLevel.Error:
+                return 'E';
+        }
+    }
+
+    protected composeTimestamp(): string {
+        const date = new Date();
+        const pad = (value: number, width = 2): string => String(value).padStart(width, '0');
+        return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${pad(date.getMilliseconds(), 3)}`;
+    }
+
     private composeTitle(level: LogLevel): titleData {
         const now = this.composeTimestamp();
         const bgColor = LogLevelBackgroundColors[level];
         const fgColor = LogLevelForegroundColors[level];
         return {
-            titleString: `%c${LogLevelPrefix[level]}%c ${this.tag} %c${now}%c`,
+            titleString: `%c${this.composePrefix(level)}%c ${this.tag} %c${now}%c`,
             designStrings: [
                 `font-weight: bold;color: ${fgColor};border-radius: 50%; background: ${bgColor}; padding-block: 1px; padding-inline: 5px;`,
                 `font-weight: bold;color: ${bgColor};`,
-                `font-weight: normal;color: ${fgColor}; border-radius: 4px; background: ${bgColor}; padding-inline: 4px;`,
+                `font-weight: normal;color: ${TimestampForegroundColor}; border-radius: 4px; background: ${TimestampBackgroundColor}; padding-inline: 4px;`,
                 'font-weight: normal'
             ]
         };

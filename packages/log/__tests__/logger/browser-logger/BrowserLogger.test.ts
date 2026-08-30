@@ -4,7 +4,8 @@ import { BrowserLogger } from '../../../src/logger/browser-logger';
 import {
     LogLevelBackgroundColors,
     LogLevelForegroundColors,
-    LogLevelPrefix,
+    TimestampBackgroundColor,
+    TimestampForegroundColor,
 } from '../../../src/logger/_shared/consts';
 
 const NOW = 1_700_000_000_000;
@@ -12,6 +13,10 @@ const NOW = 1_700_000_000_000;
 class TimestampProbe extends BrowserLogger {
     public now(): string {
         return this.composeTimestamp();
+    }
+
+    public prefix(level: LogLevel): string {
+        return this.composePrefix(level);
     }
 }
 
@@ -47,7 +52,7 @@ function expectTitleChrome(
     const time = new TimestampProbe().now();
     const folded = options.folded === undefined ? '' : ` ${options.folded}`;
     expect(args[0]).toBe(
-        `%c${LogLevelPrefix[options.level]}%c ${options.tag} %c${time}%c${folded}`,
+        `%c${new TimestampProbe().prefix(options.level)}%c ${options.tag} %c${time}%c${folded}`,
     );
     expect(args).toHaveLength(5);
     const fg = LogLevelForegroundColors[options.level];
@@ -55,8 +60,8 @@ function expectTitleChrome(
     expect(args[1]).toContain(`color: ${fg}`);
     expect(args[1]).toContain(`background: ${bg}`);
     expect(args[2]).toContain(`color: ${bg}`);
-    expect(args[3]).toContain(`color: ${fg}`);
-    expect(args[3]).toContain(`background: ${bg}`);
+    expect(args[3]).toContain(`color: ${TimestampForegroundColor}`);
+    expect(args[3]).toContain(`background: ${TimestampBackgroundColor}`);
     expect(args[4]).toBe('font-weight: normal');
 }
 
@@ -69,6 +74,14 @@ describe('BrowserLogger', () => {
                 tag: 'MyTag',
                 folded: 'hello',
             });
+        });
+
+        it('formats a local HH:mm:ss.SSS timestamp', () => {
+            const date = new Date(NOW);
+            const pad = (value: number, width = 2): string => String(value).padStart(width, '0');
+            expect(new TimestampProbe().now()).toBe(
+                `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${pad(date.getMilliseconds(), 3)}`
+            );
         });
 
         it('uses the level prefix letter', () => {

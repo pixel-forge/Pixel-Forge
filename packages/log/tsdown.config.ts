@@ -9,6 +9,7 @@ export default defineConfig((inline) => {
     entry: {
       index: 'src/index.ts',
       'browser-logger/index': 'src/logger/browser-logger/index.ts',
+      'node-logger/index': 'src/logger/node-logger/index.ts',
     },
     format: ['esm'],
     platform: 'neutral',

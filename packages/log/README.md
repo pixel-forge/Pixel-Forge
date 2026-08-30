@@ -19,12 +19,14 @@ separate subpaths so importing one cannot pull another:
 ```ts
 import { LogLevel, type LogParcel } from '@pixel-forge/log';
 import { BrowserLogger } from '@pixel-forge/log/browser-logger';
+import { NodeLogger } from '@pixel-forge/log/node-logger';
 ```
 
 | Subpath          | Exposes                                      |
 | ---------------- | -------------------------------------------- |
 | `.` (root)       | Shared `LogLevel`, `LogParcel`, and related types |
 | `browser-logger` | `BrowserLogger` only                         |
+| `node-logger`    | `NodeLogger` only                            |
 
 The `Logger` base class is internal to the package (not importable).
 

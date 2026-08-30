@@ -1,8 +1,5 @@
-import { vi } from 'vitest';
 import { LogLevel, type LogParcel } from '../../../src/index';
 import { Logger } from '../../../src/logger/_shared/Logger';
-
-const NOW = 1_700_000_000_000;
 
 class TestLogger extends Logger {
     public readonly calls: { level: LogLevel; parcels: LogParcel[] }[] = [];
@@ -11,10 +8,6 @@ class TestLogger extends Logger {
         if (!this.canLog(level))
             return;
         this.calls.push({ level, parcels });
-    }
-
-    public timestamp(): string {
-        return this.composeTimestamp();
     }
 
     public getTag(): string {
@@ -59,16 +52,5 @@ describe('Logger', () => {
 
     it('defaults the tag to the class name', () => {
         expect(new TestLogger().getTag()).toBe('TestLogger');
-    });
-
-    it('formats a local HH:mm:ss.SSS timestamp', () => {
-        vi.useFakeTimers();
-        vi.setSystemTime(NOW);
-        const date = new Date(NOW);
-        const pad = (value: number, width = 2): string => String(value).padStart(width, '0');
-        expect(new TestLogger().timestamp()).toBe(
-            `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${pad(date.getMilliseconds(), 3)}`
-        );
-        vi.useRealTimers();
     });
 });

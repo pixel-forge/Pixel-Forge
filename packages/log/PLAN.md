@@ -27,13 +27,13 @@ clear, and keep other environments in mind so the API shape can grow.
    package root `@pixel-forge/log` via `src/index.ts` — shared across every
    environment logger, not a barrel of those loggers.
 3. Each environment logger is its **own public subpath** (`browser-logger`,
-   later `node-logger`, …). Sources live under `src/logger/<name>/` and import
+   `node-logger`, …). Sources live under `src/logger/<name>/` and import
    `_shared` only — never another environment folder — so importing
    `@pixel-forge/log/browser-logger` cannot pull a Node logger.
 4. **Reporting** (Proxy) is a sibling top-level area under `src/` later (e.g.
    `src/proxy/`), not nested under `logger/`.
-5. Specialize formatting per environment; only lift what is truly shared into
-   `_shared` / the root export.
+5. Specialize formatting per environment (including timestamps); only lift what
+   is truly shared into `_shared` / the root export.
 
 ### Suggested shape (when you implement)
 
@@ -59,8 +59,9 @@ out.
 When more than one printable is logged, use `console.group`:
 
 - **Group title:** `{level prefix} {tag} {timestamp}`
-- If the first parcel is a `string` or `number`, fold it into the title and put
-  the remaining parcels in the group body
+- If the first parcel is not an object (`string`, `number`, `boolean`, `bigint`,
+  `undefined`, …), fold it into the title and put the remaining parcels in the
+  group body. `null` stays in the body (`typeof null === 'object'`).
 - Otherwise keep the full chrome as the title and print every parcel in the body
 - A single parcel (or title-only with no body) can stay a one-line `console.*`
   call without a group
@@ -91,7 +92,7 @@ packages/log/
     logger/                 ← outputting logs (implementation tree)
       _shared/              ← Logger base (internal) + type sources
       browser-logger/       ← @pixel-forge/log/browser-logger
-      # node-logger/        ← later → @pixel-forge/log/node-logger
+      node-logger/          ← @pixel-forge/log/node-logger
     # proxy/                ← later → sending / collecting logs
   PLAN.md
   README.md
