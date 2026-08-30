@@ -1,6 +1,6 @@
 {
   "name": "@pixel-forge/utils",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Shared TypeScript utilities for Pixel Forge libraries.",
   "license": "MIT",
   "type": "module",
