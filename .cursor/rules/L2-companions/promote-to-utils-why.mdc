@@ -1,0 +1,23 @@
+---
+description: >-
+  Rationale for promoting a helper into `@pixel-forge/utils` when it is
+  abstracted. Use when a named helper is not about the caller package's
+  domain (logging, color, …) and could live on a utils subpath.
+alwaysApply: false
+---
+
+# Why promote abstractions to utils
+
+`@pixel-forge/utils` exists so general TypeScript helpers are not rewritten
+in every library. A function that only happened to be born in `log` or
+another package still belongs on the matching utils subpath once it is a
+named helper.
+
+`isPlainObject` started on `BrowserLogger` to tell `typeof === 'object'`
+from real objects (`null`, arrays, `Error`, `Date`, `RegExp`). That is not
+a logger concern; it belongs in `@pixel-forge/utils/object`.
+
+This sits after specify-then-abstract and extract-second-copy: implement
+the specified behavior locally, extract when a second site needs it, then
+promote if the helper has no package domain. Do not mint a utils helper
+in the same change that first needs the behavior.
