@@ -18,7 +18,11 @@ importer).
 
 ## Import surface
 
-There is no root entry point. You `@use` the subpath you need:
+There is no compiled CSS and no `dist/`. npm publishes `src/`. The public
+surface is the `exports` map in `package.json` — one subpath per domain, each
+pointing at that domain's `_index.scss`. Extra files in the folder (for example
+`_number.scss`) are for `@forward` from `_index.scss`; they are not importable as
+their own subpaths.
 
 ```scss
 @use 'pkg:@pixel-forge/sass-utils/assertion' as Assert;

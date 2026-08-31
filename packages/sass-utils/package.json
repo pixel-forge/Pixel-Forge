@@ -30,16 +30,16 @@
   },
   "exports": {
     "./assertion": {
-      "sass": "./src/assertion.scss",
-      "default": "./src/assertion.scss"
+      "sass": "./src/assertion/_index.scss",
+      "default": "./src/assertion/_index.scss"
     },
     "./color": {
-      "sass": "./src/color.scss",
-      "default": "./src/color.scss"
+      "sass": "./src/color/_index.scss",
+      "default": "./src/color/_index.scss"
     },
     "./palette": {
-      "sass": "./src/palette.scss",
-      "default": "./src/palette.scss"
+      "sass": "./src/palette/_index.scss",
+      "default": "./src/palette/_index.scss"
     },
     "./package.json": "./package.json"
   },

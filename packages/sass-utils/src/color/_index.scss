@@ -1,5 +1,5 @@
 @use 'sass:color';
-@use './assertion.scss' as Assert;
+@use '../assertion' as Assert;
 
 /// Returns `$color` with its alpha set to `$alpha`. Channels are read in `rgb`
 /// space, so HSL (and other) inputs still produce an RGB result.
