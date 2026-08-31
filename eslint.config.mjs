@@ -57,7 +57,12 @@ export default tseslint.config(
     },
   },
   {
-    files: ['**/*.config.{ts,mts,mjs}', 'configs/**/*.ts', 'eslint.config.mjs'],
+    files: [
+      '**/*.config.{ts,mts,mjs}',
+      'configs/**/*.ts',
+      'eslint.config.mjs',
+      'scripts/**/*.mjs',
+    ],
     languageOptions: {
       globals: globals.node,
     },

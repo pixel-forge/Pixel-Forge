@@ -20,7 +20,7 @@
     "changeset": "changeset",
     "release:status": "changeset status",
     "release:prep": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && changeset version",
-    "release:publish": "pnpm build && changeset publish"
+    "release:publish": "node scripts/release-publish.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.5",
