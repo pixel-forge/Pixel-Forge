@@ -1,6 +1,6 @@
 {
   "name": "@pixel-forge/sass-utils",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Sass shorthands, mixins, and functions for Pixel Forge.",
   "license": "MIT",
   "type": "module",
