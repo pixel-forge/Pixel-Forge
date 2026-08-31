@@ -25,13 +25,14 @@ employers, rather than being shaped around any one codebase:
 
 ## Packages
 
-| Package                                | Description                                    | Status         |
-| -------------------------------------- | ---------------------------------------------- | -------------- |
-| [`@pixel-forge/utils`](packages/utils) | General TypeScript utility functions and types | In development |
-| [`@pixel-forge/log`](packages/log)     | Console logging and log reporting              | In development |
-| `@pixel-forge/react`                   | React component library                        | Planned        |
-| `@pixel-forge/search`                  | Universal search                               | Planned        |
-| `@pixel-forge/dnd`                     | Drag and drop                                  | Planned        |
+| Package                                          | Description                                    | Status         |
+| ------------------------------------------------ | ---------------------------------------------- | -------------- |
+| [`@pixel-forge/utils`](packages/utils)           | General TypeScript utility functions and types | In development |
+| [`@pixel-forge/log`](packages/log)               | Console logging and log reporting              | In development |
+| [`@pixel-forge/sass-utils`](packages/sass-utils) | Sass shorthands, mixins, and functions         | In development |
+| `@pixel-forge/react`                             | React component library                        | Planned        |
+| `@pixel-forge/search`                            | Universal search                               | Planned        |
+| `@pixel-forge/dnd`                               | Drag and drop                                  | Planned        |
 
 `utils` is the shared foundation; most other packages depend on it. `search` and
 `dnd` are each intended as a framework-agnostic core plus a thin React binding,

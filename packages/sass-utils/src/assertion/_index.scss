@@ -1,0 +1,73 @@
+@use 'sass:meta';
+@use 'sass:math';
+
+/// Returns `$value` if it is a color.
+///
+/// CSS named colors like `red` are colors. A quoted string or a number is not.
+///
+/// @param {*} $value - Candidate to check
+/// @return {Color} `$value` unchanged
+/// @throw if `meta.type-of($value)` is not `color`
+@function assertColor($value) {
+  @if meta.type-of($value) != 'color' {
+    @error 'Expected a color, got #{meta.type-of($value)}: #{$value}';
+  }
+  @return $value;
+}
+
+/// Returns `$value` if it is a number. `$min` and `$max` are inclusive bounds;
+/// omit a bound (or pass `null`) to leave that side open.
+///
+/// @param {*} $value - Candidate to check
+/// @param {Number | null} $min [null] - Inclusive lower bound
+/// @param {Number | null} $max [null] - Inclusive upper bound
+/// @return {Number} `$value` unchanged
+/// @throw if `$value` is not a number
+/// @throw if a provided bound is not a number
+/// @throw if `$value < $min` or `$value > $max`
+///
+/// @example scss
+///   assertNumber($n, $min: 0);
+///   assertNumber($n, $max: 100);
+///   assertNumber($alpha, 0, 1);
+@function assertNumber($value, $min: null, $max: null) {
+  @if meta.type-of($value) != 'number' {
+    @error 'Expected a number, got #{meta.type-of($value)}: #{$value}';
+  }
+
+  @if $min != null {
+    @if meta.type-of($min) != 'number' {
+      @error 'Expected minimum to be a number, got #{meta.type-of($min)}: #{$min}';
+    }
+
+    @if $value < $min {
+      @error 'Expected at least #{$min}, got #{$value}';
+    }
+  }
+
+  @if $max != null {
+    @if meta.type-of($max) != 'number' {
+      @error 'Expected maximum to be a number, got #{meta.type-of($max)}: #{$max}';
+    }
+
+    @if $value > $max {
+      @error 'Expected at most #{$max}, got #{$value}';
+    }
+  }
+
+  @return $value;
+}
+
+/// Returns `$value` if it is an integer. Non-numbers fail through `assertNumber`.
+///
+/// @param {*} $value - Candidate to check
+/// @return {Number} `$value` unchanged
+/// @throw if `$value` is not a number
+/// @throw if `$value` is not an integer
+@function assertInteger($value) {
+  $value: assertNumber($value);
+  @if $value != math.round($value) {
+    @error 'Expected an integer, got #{$value}';
+  }
+  @return $value;
+}
