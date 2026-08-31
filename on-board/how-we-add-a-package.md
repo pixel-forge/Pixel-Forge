@@ -1,7 +1,7 @@
 # How we add a package
 
 A walkthrough for a new library. The example is a hypothetical
-`@pixel-forge/logger` with two domains, `console` and `format`.
+`@pixel-forge/log` with two domains, `browser` and `node`.
 
 Read [how-we-structure-packages.md](how-we-structure-packages.md) first — this
 document is the mechanical steps, that one is the reasoning.
@@ -9,7 +9,7 @@ document is the mechanical steps, that one is the reasoning.
 ## 1. Check the name is free
 
 ```bash
-npm view @pixel-forge/logger
+npm view @pixel-forge/log
 ```
 
 A 404 means available.
@@ -17,12 +17,12 @@ A 404 means available.
 ## 2. Create the directory
 
 ```
-packages/logger/
+packages/log/
   src/
-    console/index.ts
-    format/index.ts
+    browser/index.ts
+    node/index.ts
   __tests__/
-    console/index.test.ts
+    browser/index.test.ts
   package.json
   tsconfig.json
   tsdown.config.ts
@@ -37,18 +37,18 @@ workspace-wide.
 
 ```json
 {
-  "name": "@pixel-forge/logger",
+  "name": "@pixel-forge/log",
   "version": "0.0.0",
-  "description": "Enhanced console logging.",
+  "description": "Console logging and log reporting.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pixel-forge/Pixel-Forge.git",
-    "directory": "packages/logger"
+    "directory": "packages/log"
   },
-  "homepage": "https://github.com/pixel-forge/Pixel-Forge/tree/main/packages/logger#readme",
+  "homepage": "https://github.com/pixel-forge/Pixel-Forge/tree/main/packages/log#readme",
   "bugs": "https://github.com/pixel-forge/Pixel-Forge/issues",
   "files": ["dist"],
   "scripts": {
@@ -92,8 +92,8 @@ export default defineConfig((inline) => {
 
   return {
     entry: {
-      'console/index': 'src/console/index.ts',
-      'format/index': 'src/format/index.ts',
+      'browser/index': 'src/browser/index.ts',
+      'node/index': 'src/node/index.ts',
     },
     format: ['esm'],
     platform: 'neutral',
@@ -118,7 +118,7 @@ export default mergeConfig(baseTestConfig, defineConfig({}));
 ## 7. Depending on another package
 
 ```bash
-pnpm --filter @pixel-forge/logger add @pixel-forge/utils@workspace:^
+pnpm --filter @pixel-forge/log add @pixel-forge/utils@workspace:^
 ```
 
 The `workspace:^` protocol links the local source during development, and
@@ -141,7 +141,7 @@ deps: {
 
 ```bash
 pnpm install
-pnpm --filter @pixel-forge/logger build
+pnpm --filter @pixel-forge/log build
 ```
 
 Confirm the generated `exports` map in `package.json` matches your entries, then

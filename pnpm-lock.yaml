@@ -66,6 +66,12 @@ importers:
         specifier: ^1.103.1
         version: 1.103.1
 
+  packages/log:
+    dependencies:
+      '@pixel-forge/utils':
+        specifier: workspace:^
+        version: link:../utils
+
   packages/utils: {}
 
 packages:

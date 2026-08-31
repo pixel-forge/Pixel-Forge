@@ -201,7 +201,7 @@ Linting is workspace-wide from the root, so packages carry no `lint` script.
 ## Target package graph
 
 ```
-utils ──┬── logger
+utils ──┬── log
         ├── react ──┬── search
         ├── search  │
         └── dnd ────┘
@@ -215,7 +215,7 @@ compiled JS, and has no package dependency on `utils`.
 `search` and `dnd` should each be a framework-agnostic core plus a thin React
 binding, so the core stays usable without React.
 
-Stateful packages (`logger`'s global config, `dnd`'s drag manager, `react`'s
+Stateful packages (`log`'s global config, `dnd`'s drag manager, `react`'s
 contexts) are the reason ESM-only matters beyond simplicity: a dual build lets a
 consumer load two copies with separate state, which silently breaks singletons
 and makes `useContext` return defaults.

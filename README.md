@@ -28,8 +28,8 @@ employers, rather than being shaped around any one codebase:
 | Package                                          | Description                                    | Status         |
 | ------------------------------------------------ | ---------------------------------------------- | -------------- |
 | [`@pixel-forge/utils`](packages/utils)           | General TypeScript utility functions and types | In development |
+| [`@pixel-forge/log`](packages/log)               | Console logging and log reporting              | In development |
 | [`@pixel-forge/sass-utils`](packages/sass-utils) | Sass shorthands, mixins, and functions         | In development |
-| `@pixel-forge/logger`                            | Enhanced console logging                       | Planned        |
 | `@pixel-forge/react`                             | React component library                        | Planned        |
 | `@pixel-forge/search`                            | Universal search                               | Planned        |
 | `@pixel-forge/dnd`                               | Drag and drop                                  | Planned        |

@@ -26,6 +26,7 @@ import { lastArrayElement } from '@pixel-forge/utils/array';
 | Subpath  | Exposes                                                    |
 | -------- | ---------------------------------------------------------- |
 | `array`  | Helpers for reading and manipulating arrays                |
+| `color`  | Branded color strings and is/assert helpers (hex, rgb, rgba, hsl) |
 | `object` | Helpers for inspecting and transforming plain objects      |
 | `timing` | Time and scheduling helpers, such as promise-based delays  |
 | `types`  | Reusable type-level utilities. Types only, no runtime code |
