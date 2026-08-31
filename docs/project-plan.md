@@ -205,7 +205,12 @@ utils ──┬── logger
         ├── react ──┬── search
         ├── search  │
         └── dnd ────┘
+
+sass-utils
 ```
+
+`sass-utils` is independent of the TypeScript graph: it ships Sass partials, not
+compiled JS, and has no package dependency on `utils`.
 
 `search` and `dnd` should each be a framework-agnostic core plus a thin React
 binding, so the core stays usable without React.

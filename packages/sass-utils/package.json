@@ -1,0 +1,55 @@
+{
+  "name": "@pixel-forge/sass-utils",
+  "version": "0.0.0",
+  "description": "Sass shorthands, mixins, and functions for Pixel Forge.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pixel-forge/Pixel-Forge.git",
+    "directory": "packages/sass-utils"
+  },
+  "homepage": "https://github.com/pixel-forge/Pixel-Forge/tree/main/packages/sass-utils#readme",
+  "bugs": "https://github.com/pixel-forge/Pixel-Forge/issues",
+  "keywords": [
+    "sass",
+    "scss",
+    "mixins",
+    "functions",
+    "shorthands"
+  ],
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "clean": "rimraf dist",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "exports": {
+    "./assertion": {
+      "sass": "./src/assertion.scss",
+      "default": "./src/assertion.scss"
+    },
+    "./color": {
+      "sass": "./src/color.scss",
+      "default": "./src/color.scss"
+    },
+    "./palette": {
+      "sass": "./src/palette.scss",
+      "default": "./src/palette.scss"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "devDependencies": {
+    "sass": "^1.103.1"
+  }
+}

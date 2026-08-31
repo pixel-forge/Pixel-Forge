@@ -1,0 +1,32 @@
+@use 'sass:math';
+@use 'sass:color';
+@use 'sass:list';
+@use './assertion.scss' as Assert;
+
+/// Builds a list of successively lighter tints of `$baseColor`.
+///
+/// Index `0` is `$baseColor` unchanged. Each later index scales lightness by
+/// `i / $steps` toward white. The loop is `0` to `$steps` exclusive, so the
+/// list never includes a fully white step.
+///
+/// @param {Color} $baseColor - Color to tint
+/// @param {Number} $steps - Length of the list; integer `>= 1`
+/// @return {List} `$steps` colors
+/// @throw if `$baseColor` is not a color
+/// @throw if `$steps` is not an integer `>= 1`
+///
+/// @example scss
+///   $tints: paletteBuilder(#f00, 4);
+///   // red, rgb(100%, 25%, 25%), rgb(100%, 50%, 50%), rgb(100%, 75%, 75%)
+@function paletteBuilder($baseColor, $steps) {
+  $baseColor: Assert.assertColor($baseColor);
+  $steps: Assert.assertInteger($steps);
+  $steps: Assert.assertNumber($steps, $min: 1);
+  $colorList: ();
+  @for $i from 0 to $steps {
+    $lightness: math.percentage(math.div($i, $steps));
+    $newColor: color.scale($baseColor, $lightness: $lightness);
+    $colorList: list.append($colorList, $newColor);
+  }
+  @return $colorList;
+}
