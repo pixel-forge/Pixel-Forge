@@ -1,0 +1,22 @@
+@use 'sass:color';
+@use '../assertion' as Assert;
+
+/// Returns `$color` with its alpha set to `$alpha`. Channels are read in `rgb`
+/// space, so HSL (and other) inputs still produce an RGB result.
+///
+/// @param {Color} $color - Any Sass color
+/// @param {Number} $alpha [1] - Opacity in the inclusive `0–1` range
+/// @return {Color}
+/// @throw if `$color` is not a color
+/// @throw if `$alpha` is not a number in `0–1`
+///
+/// @example scss
+///   .overlay { color: colorWithAlpha(#000, 0.5); }
+@function colorWithAlpha($color, $alpha: 1) {
+  $color: Assert.assertColor($color);
+  $alpha: Assert.assertNumber($alpha, 0, 1);
+  $r: color.channel($color, 'red', $space: rgb);
+  $g: color.channel($color, 'green', $space: rgb);
+  $b: color.channel($color, 'blue', $space: rgb);
+  @return rgba($r, $g, $b, $alpha);
+}
