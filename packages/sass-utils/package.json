@@ -41,6 +41,10 @@
       "sass": "./src/palette/_index.scss",
       "default": "./src/palette/_index.scss"
     },
+    "./layouts": {
+      "sass": "./src/layouts/_index.scss",
+      "default": "./src/layouts/_index.scss"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {

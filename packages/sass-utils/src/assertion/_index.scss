@@ -1,5 +1,6 @@
 @use 'sass:meta';
 @use 'sass:math';
+@use './css-size' as CssSize;
 
 /// Returns `$value` if it is a color.
 ///
@@ -56,6 +57,32 @@
   }
 
   @return $value;
+}
+
+/// Returns `$value` if it is a CSS size (a length or percentage). Unitless `0`
+/// is a size; any other unitless number is not.
+///
+/// `$min` and `$max` are inclusive bounds; omit a bound (or pass `null`) to
+/// leave that side open. Bounds must be Sass-compatible with `$value` — unitless
+/// `0` is compatible with every unit; `1px` is not compatible with `1rem`.
+///
+/// @param {*} $value - Candidate to check
+/// @param {Number | null} $min [null] - Inclusive lower bound
+/// @param {Number | null} $max [null] - Inclusive upper bound
+/// @return {Number} `$value` unchanged
+/// @throw if `$value` is not a CSS size
+/// @throw if a provided bound is not a number
+/// @throw if `$value < $min` or `$value > $max`
+///
+/// @example scss
+///   assertSize($width);
+///   assertSize($gap, $min: 0);
+@function assertSize($value, $min: null, $max: null) {
+  @if not CssSize.isCssSize($value) {
+    @error 'Expected a CSS size, got #{meta.type-of($value)}: #{$value}';
+  }
+
+  @return assertNumber($value, $min, $max);
 }
 
 /// Returns `$value` if it is an integer. Non-numbers fail through `assertNumber`.

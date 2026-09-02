@@ -1,0 +1,32 @@
+@use '../assertion' as Assert;
+
+/// Responsive grid that fills the row with columns at least `$min-width` wide.
+///
+/// Override `--auto-grid-min-col-width` or `--auto-grid-gap` from another class
+/// or a media query. Do not replace `grid-template-columns` or re-include the
+/// mixin.
+///
+/// @param {Number} $min-width - Positive CSS size (length or percentage)
+/// @param {Number} $gap [1rem] - CSS size; `0` is allowed
+/// @throw if `$min-width` is not a positive CSS size
+/// @throw if `$gap` is not a CSS size `>= 0`
+///
+/// @example scss
+///   .cards { @include auto-grid(12rem); }
+///   @media (min-width: 60rem) {
+///     .cards { --auto-grid-min-col-width: 18rem; }
+///   }
+@mixin auto-grid($min-width, $gap: 1rem) {
+  $min-width: Assert.assertSize($min-width);
+  @if $min-width <= 0 {
+    @error 'Expected a positive CSS size, got #{$min-width}';
+  }
+
+  $gap: Assert.assertSize($gap, $min: 0);
+
+  --auto-grid-min-col-width: #{$min-width};
+  --auto-grid-gap: #{$gap};
+  display: grid;
+  gap: var(--auto-grid-gap);
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--auto-grid-min-col-width), 100%), 1fr));
+}

@@ -80,6 +80,56 @@ describe('assertNumber', () => {
   });
 });
 
+describe('assertSize', () => {
+  it('returns a length unchanged', () => {
+    expect(compile('@use "assertion" as Assert; .x { width: Assert.assertSize(12rem); }')).toBe(
+      '.x {\n  width: 12rem;\n}',
+    );
+  });
+
+  it('accepts a percentage', () => {
+    expect(compile('@use "assertion" as Assert; .x { width: Assert.assertSize(50%); }')).toBe(
+      '.x {\n  width: 50%;\n}',
+    );
+  });
+
+  it('accepts unitless 0', () => {
+    expect(compile('@use "assertion" as Assert; .x { width: Assert.assertSize(0); }')).toBe(
+      '.x {\n  width: 0;\n}',
+    );
+  });
+
+  it('accepts a value at min 0', () => {
+    expect(
+      compile('@use "assertion" as Assert; .x { width: Assert.assertSize(0px, $min: 0); }'),
+    ).toBe('.x {\n  width: 0px;\n}');
+  });
+
+  it('rejects a unitless non-zero number', () => {
+    expect(compileError('@use "assertion" as Assert; .x { width: Assert.assertSize(12); }')).toBe(
+      'Expected a CSS size, got number: 12',
+    );
+  });
+
+  it('rejects a non-size unit', () => {
+    expect(compileError('@use "assertion" as Assert; .x { width: Assert.assertSize(1fr); }')).toBe(
+      'Expected a CSS size, got number: 1fr',
+    );
+  });
+
+  it('rejects a non-number', () => {
+    expect(compileError('@use "assertion" as Assert; .x { width: Assert.assertSize(red); }')).toBe(
+      'Expected a CSS size, got color: red',
+    );
+  });
+
+  it('rejects a value below min', () => {
+    expect(
+      compileError('@use "assertion" as Assert; .x { width: Assert.assertSize(-1px, $min: 0); }'),
+    ).toBe('Expected at least 0, got -1px');
+  });
+});
+
 describe('assertInteger', () => {
   it('returns an integer unchanged', () => {
     expect(compile('@use "assertion" as Assert; .x { z-index: Assert.assertInteger(5); }')).toBe(

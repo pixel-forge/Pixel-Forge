@@ -1,0 +1,69 @@
+@use 'sass:map';
+@use 'sass:math';
+@use 'sass:meta';
+
+$-size-units: (
+  '%': true,
+  'px': true,
+  'cm': true,
+  'mm': true,
+  'q': true,
+  'in': true,
+  'pc': true,
+  'pt': true,
+  'em': true,
+  'rem': true,
+  'ex': true,
+  'rex': true,
+  'cap': true,
+  'rcap': true,
+  'ch': true,
+  'rch': true,
+  'ic': true,
+  'ric': true,
+  'lh': true,
+  'rlh': true,
+  'vw': true,
+  'vh': true,
+  'vi': true,
+  'vb': true,
+  'vmin': true,
+  'vmax': true,
+  'svw': true,
+  'svh': true,
+  'svi': true,
+  'svb': true,
+  'svmin': true,
+  'svmax': true,
+  'lvw': true,
+  'lvh': true,
+  'lvi': true,
+  'lvb': true,
+  'lvmin': true,
+  'lvmax': true,
+  'dvw': true,
+  'dvh': true,
+  'dvi': true,
+  'dvb': true,
+  'dvmin': true,
+  'dvmax': true,
+  'cqw': true,
+  'cqh': true,
+  'cqi': true,
+  'cqb': true,
+  'cqmin': true,
+  'cqmax': true,
+);
+
+@function isCssSize($value) {
+  @if meta.type-of($value) != 'number' {
+    @return false;
+  }
+
+  $unit: math.unit($value);
+  @if $unit == '' {
+    @return $value == 0;
+  }
+
+  @return map.has-key($-size-units, $unit);
+}
